@@ -1,0 +1,500 @@
+/* AIOManager — Cosmic Pink & Light Blue Glitter Theme Stylesheet */
+
+:root {
+    /* Cosmic Pink & Cyan theme colors (raw components for Tailwind) */
+    --brand-500-rgb: 236 72 153;
+    --brand-600-rgb: 219 39 119;
+    --brand-700-rgb: 190 24 93;
+    --brand-900-rgb: 131 24 67;
+    
+    --cosmic-400-rgb: 34 211 238;
+    --cosmic-500-rgb: 6 182 212;
+    --cosmic-600-rgb: 8 145 178;
+    --cosmic-900-rgb: 8 51 68;
+    
+    /* CSS variables mapped to rgb functions for custom CSS properties */
+    --brand-500: rgb(var(--brand-500-rgb));
+    --brand-600: rgb(var(--brand-600-rgb));
+    --brand-700: rgb(var(--brand-700-rgb));
+    --brand-900: rgb(var(--brand-900-rgb));
+    
+    --cosmic-400: rgb(var(--cosmic-400-rgb));
+    --cosmic-500: rgb(var(--cosmic-500-rgb));
+    --cosmic-600: rgb(var(--cosmic-600-rgb));
+    --cosmic-900: rgb(var(--cosmic-900-rgb));
+    
+    /* RGB values for custom glow shadows and drop shadows */
+    --brand-rgb: 236, 72, 153;      /* #ec4899 */
+    --cosmic-rgb: 34, 211, 238;     /* #22d3ee */
+}
+
+/* Deep space root adjustments */
+body {
+    background-color: #04020a;
+    overflow-y: scroll;
+}
+
+/* Custom Scrollbar globally */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(3, 2, 8, 0.7);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--brand-500), var(--cosmic-400));
+    border-radius: 999px;
+    border: 2px solid rgba(4, 2, 10, 0.9);
+    box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--brand-600), var(--cosmic-500));
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox support */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand-500) rgba(3, 2, 8, 0.7);
+}
+
+/* Starfield canvas overlay */
+canvas#starfield-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Glassmorphism custom components */
+.glass-panel {
+    background: rgba(6, 4, 15, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Shimmer background gradient for a glittery aesthetic (Pink/Amethyst tint) */
+@keyframes glitterShimmer {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.glitter-card-bg {
+    background: linear-gradient(135deg, rgba(6, 4, 15, 0.75), rgba(28, 10, 42, 0.75), rgba(6, 4, 15, 0.75));
+    background-size: 200% 200%;
+    animation: glitterShimmer 6s ease infinite;
+}
+
+/* Galactic Card - Cosmic glowing effect with Pink & Cyan accents */
+.galactic-card {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.galactic-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(var(--brand-rgb), 0.28); /* Pink border hover */
+    box-shadow: 
+        0 12px 40px -10px rgba(var(--cosmic-rgb), 0.16), /* Cyan/Light Blue glow */
+        0 0 22px 2px rgba(var(--brand-rgb), 0.08), /* Baby Pink nebulae backdrop glow */
+        0 15px 35px 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Active tab highlight effect in floating nav pill (Baby Pink & Cyan glow) */
+.tab-btn.active-pill {
+    color: #ffffff;
+    background: rgba(var(--brand-rgb), 0.08); /* Pink active tint */
+    border: 1px solid rgba(var(--brand-rgb), 0.35); /* Pink active border */
+    box-shadow: 
+        0 0 15px -3px rgba(var(--cosmic-rgb), 0.25), /* Cyan glow */
+        inset 0 0 8px rgba(var(--brand-rgb), 0.1);
+}
+
+.tab-btn:hover:not(.active-pill) {
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+}
+
+/* Mobile active tab design */
+.tab-btn-mobile.active-pill-mobile {
+    color: var(--brand-500); /* Baby pink active text */
+    background: rgba(var(--brand-rgb), 0.06);
+    box-shadow: inset 0 0 10px rgba(var(--brand-rgb), 0.04);
+}
+
+/* Scrollbar customizations overriding custom scrollbars locally */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(3, 2, 8, 0.6);
+    border-radius: 999px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(var(--brand-rgb), 0.2); /* Pink scrollbar thumb */
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--cosmic-rgb), 0.45); /* Cyan scrollbar hover */
+}
+
+/* Radar Scan Keyframes & Animations */
+@keyframes radarPulse {
+    0% {
+        transform: scale(0.65);
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+}
+
+.radar-ping {
+    animation: radarPulse 3.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+}
+
+.animation-delay-700 {
+    animation-delay: 0.8s;
+}
+
+.animation-delay-1500 {
+    animation-delay: 1.8s;
+}
+
+/* Pulse Icons */
+@keyframes compassSpin {
+    0% {
+        transform: rotate(0deg) scale(1);
+        filter: drop-shadow(0 0 5px rgba(var(--brand-rgb), 0.3));
+    }
+    50% {
+        transform: rotate(180deg) scale(1.06);
+        filter: drop-shadow(0 0 15px rgba(var(--brand-rgb), 0.6));
+    }
+    100% {
+        transform: rotate(360deg) scale(1);
+        filter: drop-shadow(0 0 5px rgba(var(--brand-rgb), 0.3));
+    }
+}
+
+.scan-pulse-icon {
+    animation: compassSpin 8s linear infinite;
+}
+
+/* Logs slide animation */
+.log-line {
+    opacity: 0;
+    animation: logSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes logSlide {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Alert Ring pulse (Pink) */
+@keyframes criticalPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0px rgba(var(--brand-rgb), 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(var(--brand-rgb), 0);
+    }
+}
+
+.alert-ring-pulse {
+    animation: criticalPulse 2.5s infinite;
+}
+
+/* Tab panes entry animation */
+.tab-pane {
+    animation: tabFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Neon Text glow effects (Pink) */
+.text-neon-glow {
+    text-shadow: 0 0 12px rgba(var(--brand-rgb), 0.4);
+}
+
+/* Custom form elements focuses */
+input:focus, select:focus, textarea:focus {
+    border-color: rgba(var(--brand-rgb), 0.5) !important;
+    box-shadow: 0 0 0 2px rgba(var(--brand-rgb), 0.15) !important;
+}
+
+/* Custom Category badges styling overrides */
+.category-badge {
+    text-shadow: 0 0 8px currentColor;
+}
+
+/* ==========================================
+   LIQUID GLASS UI ADDITIONS
+   ========================================== */
+
+/* Editorial serif titles */
+.serif-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+}
+
+/* Liquid glass panel base */
+.liquid-glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.08),
+        inset 0 8px 16px -4px rgba(255, 255, 255, 0.03),
+        0 10px 40px rgba(0, 0, 0, 0.6);
+    border-radius: 28px;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.liquid-glass-card:hover {
+    border-color: rgba(var(--brand-rgb), 0.22);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.15),
+        0 12px 40px -10px rgba(var(--cosmic-rgb), 0.15),
+        0 0 25px 2px rgba(var(--brand-rgb), 0.08),
+        0 18px 45px rgba(0, 0, 0, 0.65);
+    transform: translateY(-3px);
+}
+
+/* Glowing liquid spot background in panels */
+.liquid-glow-spot {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.12;
+    pointer-events: none;
+    transition: all 0.8s ease;
+    z-index: 0;
+}
+
+/* Interactive Card Option styling */
+.liquid-option-btn {
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-option-btn:hover {
+    border-color: rgba(var(--brand-rgb), 0.2);
+    background: rgba(var(--brand-rgb), 0.04);
+    box-shadow: inset 0 0 10px rgba(var(--brand-rgb), 0.05);
+}
+
+.liquid-option-btn.active {
+    border-color: rgba(var(--brand-rgb), 0.4);
+    background: rgba(var(--brand-rgb), 0.08);
+    box-shadow: 
+        0 0 15px -3px rgba(var(--cosmic-rgb), 0.2),
+        inset 0 0 8px rgba(var(--brand-rgb), 0.1);
+}
+
+/* Glassmorphic Credit Card Preview */
+.glass-credit-card {
+    aspect-ratio: 1.58 / 1;
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.2),
+        0 20px 45px rgba(0, 0, 0, 0.55);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-style: preserve-3d;
+}
+
+.glass-credit-card:hover {
+    transform: rotateY(5deg) rotateX(5deg) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 
+        inset 0 1px 3px rgba(255, 255, 255, 0.3),
+        0 25px 50px rgba(0, 0, 0, 0.65),
+        0 0 30px rgba(var(--brand-rgb), 0.15);
+}
+
+/* Shimmer shine over card face */
+.glass-credit-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 35%,
+        rgba(255, 255, 255, 0.08) 45%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.08) 55%,
+        transparent 65%
+    );
+    transform: rotate(-25deg);
+    animation: cardShine 6s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes cardShine {
+    0% { transform: translate(-30%, -30%) rotate(-25deg); }
+    100% { transform: translate(30%, 30%) rotate(-25deg); }
+}
+
+.glass-card-bg-gradient {
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(var(--brand-rgb), 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.glass-card-bg-gradient-secondary {
+    position: absolute;
+    bottom: -30%;
+    left: -20%;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(circle, rgba(var(--cosmic-rgb), 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Embossed Text Effect */
+.embossed-text {
+    font-family: 'Space Grotesk', monospace;
+    letter-spacing: 0.15em;
+    color: #ffffff;
+    text-shadow: -1px -1px 1px rgba(255,255,255,0.1), 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Glass chip styling */
+.glass-card-chip {
+    width: 38px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.glass-card-chip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transform: translate(-50%, -50%);
+}
+
+/* Dynamic avatar select design */
+.avatar-option-pill {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.avatar-option-pill:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(var(--brand-rgb), 0.25);
+    border-color: rgba(var(--brand-rgb), 0.3);
+}
+
+.avatar-option-pill.active {
+    transform: scale(1.08);
+    border-color: rgba(var(--brand-rgb), 0.6);
+    box-shadow: 
+        0 0 20px rgba(var(--brand-rgb), 0.3),
+        inset 0 0 10px rgba(var(--brand-rgb), 0.15);
+}
+
+/* System sync logs console block */
+.glass-console {
+    background: rgba(3, 1, 7, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: 'Space Grotesk', monospace;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+}
+
+/* Glowing active border for profile avatar in header */
+.avatar-active-glow {
+    box-shadow: 
+        0 0 25px rgba(var(--brand-rgb), 0.65),
+        inset 0 0 10px rgba(var(--brand-rgb), 0.4) !important;
+    border-color: rgba(var(--brand-rgb), 0.8) !important;
+    transform: scale(1.08);
+}
+
+/* Discovery slideshow animations */
+.discovery-slide,
+.discovery-slide-graphic {
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.discovery-slide.hidden,
+.discovery-slide-graphic.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translateY(15px);
+}
+
+.discovery-slide:not(.hidden),
+.discovery-slide-graphic:not(.hidden) {
+    display: block !important;
+    opacity: 1 !important;
+    transform: translateY(0);
+}
