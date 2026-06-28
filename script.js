@@ -242,8 +242,43 @@ function initAppView() {
         const formPanel = document.getElementById('scan-form-panel');
         if (formPanel) formPanel.classList.remove('hidden');
         
+        const otpPanel = document.getElementById('otp-form-panel');
+        if (otpPanel) otpPanel.classList.add('hidden');
+
+        const tabsBar = document.getElementById('login-tabs-bar');
+        if (tabsBar) tabsBar.classList.remove('hidden');
+
+        const mockNotice = document.getElementById('otp-mock-notice');
+        if (mockNotice) mockNotice.classList.add('hidden');
+        
         const progressView = document.getElementById('login-progress-view');
         if (progressView) progressView.classList.add('hidden');
+
+        // Reset input fields
+        const emailInput = document.getElementById('scan-email');
+        if (emailInput) emailInput.value = '';
+
+        const phoneInput = document.getElementById('scan-phone');
+        if (phoneInput) phoneInput.value = '';
+
+        // Reset OTP timer
+        if (otpTimerInterval) {
+            clearInterval(otpTimerInterval);
+            otpTimerInterval = null;
+        }
+
+        // Reset digit boxes
+        document.querySelectorAll('.otp-box').forEach(box => {
+            box.value = '';
+            box.className = "otp-box w-12 h-14 text-center text-xl font-bold bg-slate-950/60 border border-white/10 rounded-2xl focus:border-brand-500 text-white focus:outline-none transition-all font-space";
+        });
+
+        // Reset error message
+        const errorEl = document.getElementById('otp-error-message');
+        if (errorEl) errorEl.classList.add('hidden');
+
+        // Set default active tab
+        switchLoginTab('email');
     }
 }
 
@@ -418,21 +453,24 @@ function switchTab(tabName) {
 // SIMULATED SCAN ENGINE
 // ==========================================
 function startScanning(phone, email) {
-    if (!phone || phone.length < 10) {
-        alert("Please enter a valid 10-digit mobile number.");
-        return;
+    state.currentUser.phone = phone || '';
+    state.currentUser.email = email || '';
+    state.currentUser.linkedCredentials = [];
+    
+    if (phone) {
+        state.currentUser.linkedCredentials.push({
+            type: 'Phone',
+            value: `+91 ${phone}`,
+            dateAdded: new Date().toLocaleDateString()
+        });
     }
-    if (!email || !email.includes('@')) {
-        alert("Please enter a valid email address.");
-        return;
+    if (email) {
+        state.currentUser.linkedCredentials.push({
+            type: 'Email',
+            value: email,
+            dateAdded: new Date().toLocaleDateString()
+        });
     }
-
-    state.currentUser.phone = phone;
-    state.currentUser.email = email;
-    state.currentUser.linkedCredentials = [
-        { type: 'Phone', value: `+91 ${phone}`, dateAdded: new Date().toLocaleDateString() },
-        { type: 'Email', value: email, dateAdded: new Date().toLocaleDateString() }
-    ];
 
     const scanView = document.getElementById('scan-view');
     const progressView = document.getElementById('login-progress-view');
@@ -1976,17 +2014,389 @@ function completeCancellationState() {
 }
 
 // ==========================================
+// SUPABASE CLIENT INITIALIZATION & CONFIG
+// ==========================================
+// Replace these with your actual Supabase credentials to enable genuine SMS/Email OTP.
+// When unconfigured, the system automatically falls back to Developer Mock Mode.
+const SUPABASE_URL = 'https://abecitvproprkxhbtwtt.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_qheQzXmPF2pHJHOhBH34Yw_OIAPdNDn';
+
+let supabaseClient = null;
+let isSupabaseConfigured = false;
+
+if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        isSupabaseConfigured = true;
+        console.log("⚡ Supabase Client initialized successfully.");
+    } catch (e) {
+        console.error("❌ Failed to initialize Supabase client:", e);
+    }
+} else {
+    console.log("ℹ️ Supabase URL/AnonKey not configured. Running in simulated Developer Mock Mode.");
+}
+
+// ==========================================
+// OTP VERIFICATION STATE & LOGIC
+// ==========================================
+let activeLoginTab = 'email'; // 'email' or 'phone'
+let generatedOtpCode = '';
+let otpTimerInterval = null;
+let otpCountdownValue = 30;
+
+// Tab Switching
+function switchLoginTab(type) {
+    if (type === activeLoginTab) return;
+    activeLoginTab = type;
+
+    const tabEmail = document.getElementById('login-tab-email');
+    const tabPhone = document.getElementById('login-tab-phone');
+    const emailGroup = document.getElementById('email-input-group');
+    const phoneGroup = document.getElementById('phone-input-group');
+
+    if (type === 'email') {
+        // Style Email Tab Active
+        tabEmail.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-white bg-white/5 border border-white/10 shadow-sm";
+        tabPhone.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white";
+        // Show/Hide inputs
+        emailGroup.classList.remove('hidden');
+        phoneGroup.classList.add('hidden');
+        document.getElementById('scan-phone').value = '';
+    } else {
+        // Style Phone Tab Active
+        tabPhone.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-white bg-white/5 border border-white/10 shadow-sm";
+        tabEmail.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white";
+        // Show/Hide inputs
+        phoneGroup.classList.remove('hidden');
+        emailGroup.classList.add('hidden');
+        document.getElementById('scan-email').value = '';
+    }
+}
+
+// Start Timer
+function startOtpCountdown() {
+    clearInterval(otpTimerInterval);
+    otpCountdownValue = 30;
+    
+    const timerText = document.getElementById('otp-timer-text');
+    const countdownEl = document.getElementById('otp-countdown');
+    const resendBtn = document.getElementById('btn-resend-otp');
+
+    if (timerText) timerText.classList.remove('hidden');
+    if (resendBtn) {
+        resendBtn.classList.add('hidden');
+        resendBtn.disabled = true;
+    }
+    if (countdownEl) countdownEl.innerText = otpCountdownValue;
+
+    otpTimerInterval = setInterval(() => {
+        otpCountdownValue--;
+        if (countdownEl) countdownEl.innerText = otpCountdownValue;
+
+        if (otpCountdownValue <= 0) {
+            clearInterval(otpTimerInterval);
+            if (timerText) timerText.classList.add('hidden');
+            if (resendBtn) {
+                resendBtn.classList.remove('hidden');
+                resendBtn.disabled = false;
+            }
+        }
+    }, 1000);
+}
+
+// Trigger Code Sending
+async function sendVerificationCode() {
+    let recipient = '';
+    let phoneVal = '';
+    let emailVal = '';
+
+    if (activeLoginTab === 'email') {
+        emailVal = document.getElementById('scan-email').value.trim();
+        if (!emailVal || !emailVal.includes('@') || !emailVal.includes('.')) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        recipient = emailVal;
+    } else {
+        phoneVal = document.getElementById('scan-phone').value.trim();
+        const cleanPhone = phoneVal.replace(/[^0-9]/g, '');
+        if (cleanPhone.length !== 10) {
+            alert('Please enter a valid 10-digit mobile number.');
+            return;
+        }
+        recipient = `+91 ${phoneVal}`;
+    }
+
+    const mockNoticeEl = document.getElementById('otp-mock-notice');
+
+    if (isSupabaseConfigured) {
+        if (mockNoticeEl) mockNoticeEl.classList.add('hidden');
+        
+        // Disable click state while loading
+        const btnScan = document.getElementById('btn-start-scan');
+        const originalText = btnScan.innerHTML;
+        btnScan.disabled = true;
+        btnScan.innerText = "Sending code...";
+
+        try {
+            let options = {};
+            if (activeLoginTab === 'email') {
+                options = { email: emailVal };
+            } else {
+                options = { phone: `+91${phoneVal.replace(/[^0-9]/g, '')}` };
+            }
+            
+            const { error } = await supabaseClient.auth.signInWithOtp(options);
+            
+            if (error) {
+                alert(`Supabase Auth Error: ${error.message}`);
+                btnScan.disabled = false;
+                btnScan.innerHTML = originalText;
+                return;
+            }
+        } catch (err) {
+            alert(`Failed connecting to Supabase: ${err.message}`);
+            btnScan.disabled = false;
+            btnScan.innerHTML = originalText;
+            return;
+        }
+
+        btnScan.disabled = false;
+        btnScan.innerHTML = originalText;
+
+    } else {
+        // Developer Mock Mode (Offline)
+        if (mockNoticeEl) mockNoticeEl.classList.remove('hidden');
+
+        // Generate Random Code
+        generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        // Print safely to developer tools
+        console.log(`🔑 [Simulated OTP] Code for ${recipient}: ${generatedOtpCode}`);
+    }
+
+    // Display recipient and reset inputs
+    document.getElementById('otp-recipient-display').innerText = recipient;
+    document.getElementById('otp-error-message').classList.add('hidden');
+    
+    // Clear otp digits
+    document.querySelectorAll('.otp-box').forEach(box => {
+        box.value = '';
+        box.className = "otp-box w-12 h-14 text-center text-xl font-bold bg-slate-950/60 border border-white/10 rounded-2xl focus:border-brand-500 text-white focus:outline-none transition-all font-space";
+    });
+
+    // Start Timer
+    startOtpCountdown();
+
+    // Transition forms
+    document.getElementById('scan-form-panel').classList.add('hidden');
+    document.getElementById('login-tabs-bar').classList.add('hidden');
+    document.getElementById('otp-form-panel').classList.remove('hidden');
+
+    // Auto-focus first input
+    setTimeout(() => {
+        const firstBox = document.querySelector('.otp-box[data-index="0"]');
+        if (firstBox) firstBox.focus();
+    }, 100);
+}
+
+// Verify OTP
+async function verifyEnteredOtp() {
+    const boxes = document.querySelectorAll('.otp-box');
+    const entered = Array.from(boxes).map(b => b.value.trim()).join('');
+    
+    const errEl = document.getElementById('otp-error-message');
+    const errTextEl = document.getElementById('otp-error-text');
+    const inputRow = document.getElementById('otp-input-row');
+
+    let isValid = false;
+
+    if (isSupabaseConfigured) {
+        const email = activeLoginTab === 'email' ? document.getElementById('scan-email').value.trim() : '';
+        const phone = activeLoginTab === 'phone' ? document.getElementById('scan-phone').value.trim() : '';
+
+        // Disable verify button
+        const btnVerify = document.getElementById('btn-verify-otp');
+        const originalText = btnVerify.innerHTML;
+        btnVerify.disabled = true;
+        btnVerify.innerText = "Verifying...";
+
+        try {
+            let options = {
+                token: entered,
+            };
+            if (activeLoginTab === 'email') {
+                options.email = email;
+                options.type = 'email';
+            } else {
+                options.phone = `+91${phone.replace(/[^0-9]/g, '')}`;
+                options.type = 'sms';
+            }
+
+            const { error } = await supabaseClient.auth.verifyOtp(options);
+            
+            if (!error) {
+                isValid = true;
+            } else {
+                errTextEl.innerText = error.message;
+            }
+        } catch (err) {
+            errTextEl.innerText = `Network failure: ${err.message}`;
+        }
+
+        btnVerify.disabled = false;
+        btnVerify.innerHTML = originalText;
+
+    } else {
+        // Developer Mock Mode
+        if (entered === generatedOtpCode) {
+            isValid = true;
+        } else {
+            errTextEl.innerText = "Incorrect verification code. Please check and try again.";
+        }
+    }
+
+    if (isValid) {
+        // Success!
+        clearInterval(otpTimerInterval);
+
+        boxes.forEach(box => {
+            box.classList.remove('error');
+            box.classList.add('success');
+        });
+
+        errEl.classList.add('hidden');
+
+        const email = activeLoginTab === 'email' ? document.getElementById('scan-email').value.trim() : '';
+        const phone = activeLoginTab === 'phone' ? document.getElementById('scan-phone').value.trim() : '';
+
+        setTimeout(() => {
+            startScanning(phone, email);
+        }, 800);
+    } else {
+        // Incorrect Code
+        boxes.forEach(box => {
+            box.classList.remove('success');
+            box.classList.add('error');
+        });
+
+        errEl.classList.remove('hidden');
+
+        // Trigger Shake
+        if (inputRow) {
+            inputRow.classList.add('shake-error');
+            setTimeout(() => {
+                inputRow.classList.remove('shake-error');
+            }, 400);
+        }
+    }
+}
+
+// ==========================================
 // EVENTS LISTENERS SETUP
 // ==========================================
 function setupEventListeners() {
+    // Tab Selectors
+    const tabEmail = document.getElementById('login-tab-email');
+    if (tabEmail) tabEmail.addEventListener('click', () => switchLoginTab('email'));
+    
+    const tabPhone = document.getElementById('login-tab-phone');
+    if (tabPhone) tabPhone.addEventListener('click', () => switchLoginTab('phone'));
+
+    // Start Scan / Send OTP Button
     const btnScan = document.getElementById('btn-start-scan');
     if (btnScan) {
         btnScan.addEventListener('click', () => {
-            const phone = document.getElementById('scan-phone').value.trim();
-            const email = document.getElementById('scan-email').value.trim();
-            startScanning(phone, email);
+            sendVerificationCode();
         });
     }
+
+    // Back from OTP Button
+    const btnOtpBack = document.getElementById('btn-otp-back');
+    if (btnOtpBack) {
+        btnOtpBack.addEventListener('click', () => {
+            clearInterval(otpTimerInterval);
+            document.getElementById('otp-form-panel').classList.add('hidden');
+            document.getElementById('scan-form-panel').classList.remove('hidden');
+            document.getElementById('login-tabs-bar').classList.remove('hidden');
+        });
+    }
+
+    // Verify OTP Button
+    const btnVerifyOtp = document.getElementById('btn-verify-otp');
+    if (btnVerifyOtp) {
+        btnVerifyOtp.addEventListener('click', () => {
+            verifyEnteredOtp();
+        });
+    }
+
+    // Resend OTP Button
+    const btnResendOtp = document.getElementById('btn-resend-otp');
+    if (btnResendOtp) {
+        btnResendOtp.addEventListener('click', () => {
+            sendVerificationCode();
+        });
+    }
+
+
+
+    // OTP inputs key listener (shifts, backspaces, pastes)
+    const otpBoxes = document.querySelectorAll('.otp-box');
+    otpBoxes.forEach((box, idx) => {
+        // Paste support
+        box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            const digits = pastedData.replace(/[^0-9]/g, '').slice(0, 6);
+            if (digits.length > 0) {
+                digits.split('').forEach((d, i) => {
+                    const targetBox = document.querySelector(`.otp-box[data-index="${i}"]`);
+                    if (targetBox) {
+                        targetBox.value = d;
+                        targetBox.classList.remove('error');
+                    }
+                });
+                const focusIdx = Math.min(digits.length - 1, 5);
+                const focusBox = document.querySelector(`.otp-box[data-index="${focusIdx}"]`);
+                if (focusBox) focusBox.focus();
+                
+                if (digits.length === 6) {
+                    verifyEnteredOtp();
+                }
+            }
+        });
+
+        // Numeric constraint and shift focus forward
+        box.addEventListener('input', (e) => {
+            const val = box.value.replace(/[^0-9]/g, '');
+            box.value = val;
+            box.classList.remove('error');
+            
+            if (val.length === 1 && idx < 5) {
+                const nextBox = document.querySelector(`.otp-box[data-index="${idx + 1}"]`);
+                if (nextBox) nextBox.focus();
+            }
+            
+            // Auto trigger verification if all 6 filled
+            const entered = Array.from(otpBoxes).map(b => b.value.trim()).join('');
+            if (entered.length === 6) {
+                verifyEnteredOtp();
+            }
+        });
+
+        // Backspace key support
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                box.classList.remove('error');
+                if (box.value === '' && idx > 0) {
+                    const prevBox = document.querySelector(`.otp-box[data-index="${idx - 1}"]`);
+                    if (prevBox) {
+                        prevBox.focus();
+                        prevBox.value = '';
+                    }
+                }
+            }
+        });
+    });
 
     document.querySelectorAll('[data-tab]').forEach(btn => {
         btn.addEventListener('click', () => {

@@ -498,3 +498,32 @@ input:focus, select:focus, textarea:focus {
     opacity: 1 !important;
     transform: translateY(0);
 }
+
+/* Shake animation for incorrect verification code */
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.shake-error {
+    animation: shakeError 0.4s ease-in-out;
+}
+
+/* Custom states for individual OTP digit boxes */
+.otp-box {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.otp-box.error {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.25) !important;
+    color: #fca5a5 !important;
+}
+
+.otp-box.success {
+    border-color: rgba(16, 185, 129, 0.5) !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
+    color: #a7f3d0 !important;
+}
+
