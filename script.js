@@ -312,9 +312,6 @@ function initAppView() {
         dashboardView.classList.add('hidden');
         
         // Reset panels in scan view
-        const header = document.getElementById('login-card-header');
-        if (header) header.classList.remove('hidden');
-
         const formPanel = document.getElementById('scan-form-panel');
         if (formPanel) formPanel.classList.remove('hidden');
         
@@ -2224,16 +2221,18 @@ function switchLoginTab(type) {
     const btnScan = document.getElementById('btn-start-scan');
 
     if (type === 'email') {
-        if (tabEmail) tabEmail.classList.add('active');
-        if (tabPhone) tabPhone.classList.remove('active');
+        // Style Email Tab Active
+        tabEmail.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-white bg-white/5 border border-white/10 shadow-sm";
+        tabPhone.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white";
         // Show/Hide inputs
         emailGroup.classList.remove('hidden');
         phoneGroup.classList.add('hidden');
         document.getElementById('scan-phone').value = '';
         if (btnScan) btnScan.classList.add('hidden');
     } else {
-        if (tabPhone) tabPhone.classList.add('active');
-        if (tabEmail) tabEmail.classList.remove('active');
+        // Style Phone Tab Active
+        tabPhone.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-white bg-white/5 border border-white/10 shadow-sm";
+        tabEmail.className = "flex-1 py-2.5 rounded-xl text-xs font-semibold font-space tracking-wide flex items-center justify-center space-x-2 transition-all text-slate-400 hover:text-white";
         // Show/Hide inputs
         phoneGroup.classList.remove('hidden');
         emailGroup.classList.add('hidden');
@@ -2539,9 +2538,7 @@ async function signInWithGmail() {
 function showRegisterSetup(phone, email) {
     pendingRegisterDetails = { phone, email };
 
-    // Hide Logo/Header, OTP panel, login panels to save space
-    const header = document.getElementById('login-card-header');
-    if (header) header.classList.add('hidden');
+    // Hide OTP panel, login panels
     document.getElementById('otp-form-panel').classList.add('hidden');
     document.getElementById('scan-form-panel').classList.add('hidden');
     document.getElementById('login-tabs-bar').classList.add('hidden');
@@ -2717,8 +2714,6 @@ function setupEventListeners() {
     const btnRegBack = document.getElementById('btn-register-back');
     if (btnRegBack) {
         btnRegBack.addEventListener('click', () => {
-            const header = document.getElementById('login-card-header');
-            if (header) header.classList.remove('hidden');
             const regPanel = document.getElementById('register-setup-panel');
             if (regPanel) regPanel.classList.add('hidden');
             document.getElementById('scan-form-panel').classList.remove('hidden');
@@ -2735,70 +2730,14 @@ function setupEventListeners() {
     }
 
     // Avatar selection in registration
+    const registerAvatarBtns = document.querySelectorAll('.register-avatar-btn');
     registerAvatarBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const avatarStyles = {
-                nebula: { ring: 'ring-brand-500', shadow: 'shadow-[0_0_15px_rgba(236,72,153,0.5)]', btnBg: 'from-brand-600 to-pink-500' },
-                nova: { ring: 'ring-cosmicBlue-400', shadow: 'shadow-[0_0_15px_rgba(34,211,238,0.5)]', btnBg: 'from-cosmicBlue-600 to-cyan-500' },
-                pulsar: { ring: 'ring-purple-500', shadow: 'shadow-[0_0_15px_rgba(139,92,246,0.5)]', btnBg: 'from-purple-600 to-indigo-500' },
-                quasar: { ring: 'ring-amber-500', shadow: 'shadow-[0_0_15px_rgba(245,158,11,0.5)]', btnBg: 'from-amber-600 to-orange-500' }
-            };
-
-            const selected = btn.getAttribute('data-avatar') || 'nebula';
-            selectedRegisterAvatar = selected;
-            const style = avatarStyles[selected];
-
             registerAvatarBtns.forEach(b => {
-                b.classList.remove(
-                    'ring-2', 'ring-offset-2', 'ring-offset-cosmicBg',
-                    'ring-brand-500', 'ring-cosmicBlue-400', 'ring-purple-500', 'ring-amber-500',
-                    'scale-110', 'opacity-100',
-                    'shadow-[0_0_15px_rgba(236,72,153,0.5)]',
-                    'shadow-[0_0_15px_rgba(34,211,238,0.5)]',
-                    'shadow-[0_0_15px_rgba(139,92,246,0.5)]',
-                    'shadow-[0_0_15px_rgba(245,158,11,0.5)]',
-                    'border-brand-500', 'animate-pulse'
-                );
-                b.classList.add('border-glassBorder', 'opacity-60');
+                b.className = "register-avatar-btn w-10 h-10 rounded-full border border-white/5 flex items-center justify-center text-white opacity-70 hover:opacity-100";
             });
-
-            // Highlight selected avatar beautifully
-            btn.classList.add(
-                'ring-2', 'ring-offset-2', 'ring-offset-cosmicBg',
-                style.ring, 'scale-110', 'opacity-100', style.shadow
-            );
-            btn.classList.remove('opacity-60', 'border-glassBorder');
-
-            // Dynamic "Complete Registration" button styling
-            const completeBtn = document.getElementById('btn-complete-register');
-            if (completeBtn) {
-                // Wipe from- and to- classes
-                completeBtn.className = completeBtn.className.replace(/from-\S+/g, '').replace(/to-\S+/g, '');
-                // Add new gradient classes
-                completeBtn.classList.add(style.btnBg.split(' ')[0], style.btnBg.split(' ')[1]);
-            }
-
-            // Dynamic screen glows updating
-            const glow1 = document.getElementById('bg-nebula-glow-1');
-            const glow2 = document.getElementById('bg-nebula-glow-2');
-            if (glow1 && glow2) {
-                glow1.className = glow1.className.replace(/from-\S+/g, '').replace(/to-\S+/g, '');
-                glow2.className = glow2.className.replace(/from-\S+/g, '').replace(/to-\S+/g, '');
-                
-                if (selected === 'nebula') {
-                    glow1.classList.add('from-brand-500/10', 'to-cosmicBlue-500/10');
-                    glow2.classList.add('from-cosmicBlue-500/10', 'to-brand-500/10');
-                } else if (selected === 'nova') {
-                    glow1.classList.add('from-cosmicBlue-500/10', 'to-cyan-400/10');
-                    glow2.classList.add('from-cyan-400/10', 'to-cosmicBlue-500/10');
-                } else if (selected === 'pulsar') {
-                    glow1.classList.add('from-purple-500/10', 'to-indigo-500/10');
-                    glow2.classList.add('from-indigo-500/10', 'to-purple-500/10');
-                } else if (selected === 'quasar') {
-                    glow1.classList.add('from-amber-500/10', 'to-orange-500/10');
-                    glow2.classList.add('from-orange-500/10', 'to-amber-500/10');
-                }
-            }
+            btn.className = "register-avatar-btn w-10 h-10 rounded-full border border-brand-500 flex items-center justify-center text-white scale-110 shadow-[0_0_10px_rgba(236,72,153,0.4)] animate-pulse";
+            selectedRegisterAvatar = btn.getAttribute('data-avatar');
         });
     });
 
